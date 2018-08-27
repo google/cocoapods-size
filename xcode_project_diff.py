@@ -100,7 +100,7 @@ def GetFinalBinarySize(archive_path):
     for filename in filenames:
       filepath = os.path.join(dirpath, filename)
       binary_size += int(
-          subprocess.check_output(['wc', '-c', filepath]).strip().split(' ')[0])
+          subprocess.check_output(['wc', '-c', filepath]).strip().split(b' ')[0])
   return binary_size
 
 
@@ -165,14 +165,14 @@ def Main():
       args.target_scheme)
   diff_size = source_size - target_size
   if source_size > target_size:
-    print '{} is {} larger than {}'.format(args.source_project, diff_size,
-                                           args.target_project)
+    print('{} is {} larger than {}'.format(args.source_project, diff_size,
+                                           args.target_project))
   elif source_size == target_size:
-    print '{} and {} are the same size'.format(args.source_project,
-                                               args.target_project)
+    print('{} and {} are the same size'.format(args.source_project,
+                                               args.target_project))
   else:
-    print '{} is {} smaller than {}'.format(args.source_project, -1 * diff_size,
-                                            args.target_project)
+    print('{} is {} smaller than {}'.format(args.source_project, -1 * diff_size,
+                                            args.target_project))
 
 
 if __name__ == '__main__':

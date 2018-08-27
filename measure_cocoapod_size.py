@@ -118,8 +118,8 @@ def GetPodSizeImpact(parsed_args):
 
   source_size, target_size = GenerateSizeDifference(
       source_project, TARGET_NAME, target_project, TARGET_NAME)
-  print 'The pods combined add an extra size of {} bytes'.format(
-      target_size - source_size)
+  print('The pods combined add an extra size of {} bytes'.format(
+      target_size - source_size))
 
 
 def Main():
