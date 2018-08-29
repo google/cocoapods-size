@@ -13,8 +13,6 @@
     ],
 
     "related": [
-      "firebase/quickstart-ios",
-      "firebase/firebaseui-ios",
       "firebase/firebase-ios-sdk",
     ]
 
