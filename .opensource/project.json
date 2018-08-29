@@ -9,11 +9,11 @@
     "content": "README.md",
 
     "pages" : [
-        "CONTRIBUTING.md",
+        "CONTRIBUTING.md"
     ],
 
     "related": [
-      "firebase/firebase-ios-sdk",
+      "firebase/firebase-ios-sdk"
     ]
 
 }
