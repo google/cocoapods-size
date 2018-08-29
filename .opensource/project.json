@@ -1,0 +1,21 @@
+{
+    "name": "CocoaPods Size Measurement",
+    "type": "library",
+
+    "platforms": [
+      "iOS"
+    ],
+
+    "content": "README.md",
+
+    "pages" : [
+        "CONTRIBUTING.md",
+    ],
+
+    "related": [
+      "firebase/quickstart-ios",
+      "firebase/firebaseui-ios",
+      "firebase/firebase-ios-sdk",
+    ]
+
+}
