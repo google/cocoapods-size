@@ -44,18 +44,19 @@ Measuring the size of AFNetworking CocoaPod at version 3.2.0 present in your SPE
 
 `./measure_cocoapod_size.py --cocoapods AFNetworking:3.2.0 --spec_repos SPEC_REPO`
 
+Measuring the size of RxSwift CocoaPod which is a swift pod:
 
+`./measure_cocoapod_size.py --cocoapods RxSwift --mode swift`
 
 Finding the size between two Xcode projects:
 
 `./xcode_project_diff.py --source_project=PROJECT1 --source_scheme=PROJECT1_SCHEME --target_project=PROJECT2 --target_scheme=PROJECT2_SCHEME`
 
-
 ## Available Tools
 
 ### measure_cocoapod_size.py
 
-`./measure_cocoapod_size.py --cocoapods $POD_NAME:$POD_VERSION $POD_NAME1:$POD_VERSION1`
+`./measure_cocoapod_size.py --cocoapods $POD_NAME:$POD_VERSION $POD_NAME1:$POD_VERSION1 -mode $POD_TYPE`
 
 This tool provides the size measurement given a combination of CocoaPods. This tool internally uses the xcode_project_diff.py tool.
 Please use `./measure_cocoapod_size.py -h` to get the full usage description and a complete list of the available flags.
