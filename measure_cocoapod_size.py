@@ -60,6 +60,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name):
     for repo in spec_repos:
       podfile.write('source "{}"\n'.format(repo))
     podfile.write('\n')
+    podfile.write('use_frameworks!\n')
     podfile.write('target \'{}\' do\n'.format(target_name))
     for pod, version in cocoapods.items():
       if version:

@@ -45,6 +45,21 @@ def GetConfigDict():
   return config_info
 
 
+def GetSwiftVersion():
+  """GetSwiftVersion returns the current swift version."""
+  try: 
+    cmd = "xcrun swift -version"
+    out = subprocess.check_output(cmd.split(" ")).strip()
+    # Example output 
+    #'Apple Swift version 3.0 (swiftlang-800.0.46.2 clang-800.0.38)')
+    version = out.split(' ')[3]
+    print version
+    return "4.0"
+  except:
+    return None
+  return version
+
+
 def CreateBasicCommandArgs(config_info, archive_path):
   """CreateBasicCommandArgs creates the basic command arguments.
 
@@ -59,8 +74,12 @@ def CreateBasicCommandArgs(config_info, archive_path):
       '-configuration Release', 'archive',
       '-archivePath {}'.format(archive_path)
   ]
+  swift_version = GetSwiftVersion()
+  if swift_version:
+    cmd_args.append('SWIFT_VERSION={}'.format(swift_version))
   for flag, value in config_info['compilerFlags'].items():
     cmd_args.append('{}={}'.format(flag, value))
+
   return cmd_args
 
 
