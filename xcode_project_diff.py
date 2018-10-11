@@ -98,7 +98,6 @@ def GenerateBuildCommand(project, scheme, basic_args):
     project_args.append('-project {}'.format(project))
   project_args.append('-scheme {}'.format(scheme))
   cmd = 'xcodebuild {} {}'.format(' '.join(project_args), ' '.join(basic_args))
-  print cmd
   return cmd
 
 
