@@ -53,11 +53,9 @@ def GetSwiftVersion():
     # Example output 
     #'Apple Swift version 3.0 (swiftlang-800.0.46.2 clang-800.0.38)')
     version = out.split(' ')[3]
-    print version
-    return "4.0"
+    return version
   except:
     return None
-  return version
 
 
 def CreateBasicCommandArgs(config_info, archive_path):
@@ -79,7 +77,6 @@ def CreateBasicCommandArgs(config_info, archive_path):
     cmd_args.append('SWIFT_VERSION={}'.format(swift_version))
   for flag, value in config_info['compilerFlags'].items():
     cmd_args.append('{}={}'.format(flag, value))
-
   return cmd_args
 
 
@@ -101,6 +98,7 @@ def GenerateBuildCommand(project, scheme, basic_args):
     project_args.append('-project {}'.format(project))
   project_args.append('-scheme {}'.format(scheme))
   cmd = 'xcodebuild {} {}'.format(' '.join(project_args), ' '.join(basic_args))
+  print cmd
   return cmd
 
 

@@ -26,7 +26,13 @@ import os
 import tempfile
 from xcode_project_diff import GenerateSizeDifference
 
-SAMPLE_APP = 'sizetestproject'
+OBJC_APP_DIR = 'sizetestproject'
+OBJC_APP_NAME = 'SizeTest'
+SWIFT_APP_DIR = 'SwiftApp'
+SWIFT_APP_NAME = 'SwiftApp'
+
+MODE_SWIFT = 'swift'
+MODE_OBJC = 'objc'
 
 DEFAULT_SPEC_REPOS = ['https://github.com/CocoaPods/Specs.git']
 
@@ -36,10 +42,16 @@ SPEC_REPO_DICT = {
     'master': 'https://github.com/CocoaPods/Specs.git'
 }
 
-TARGET_NAME = 'SizeTest'
 
 
-def InstallPods(cocoapods, target_dir, spec_repos, target_name):
+def GetSampleApp(mode):
+  if mode == MODE_SWIFT:
+    return SWIFT_APP_DIR, SWIFT_APP_NAME
+  else:
+    return OBJC_APP_DIR, OBJC_APP_NAME
+
+
+def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode):
   """InstallPods installs the pods.
 
   Args:
@@ -47,6 +59,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name):
     target_dir: The target directory.
     spec_repos: The set of spec repos.
     target_name: The name of the target.
+    mode: The type of cocoapods.
 
   Returns:
     The path to the workspace.
@@ -70,7 +83,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name):
     podfile.write('end')
   os.system('pod install')
   os.chdir(cwd)
-  return os.path.join(target_dir, 'SizeTest.xcworkspace')
+  return os.path.join(target_dir, '{}.xcworkspace'.format(target_name))
 
 
 def CopyProject(source_dir, target_dir):
@@ -89,6 +102,7 @@ def GetPodSizeImpact(parsed_args):
   Args:
     parsed_args: The set of arguments passed to the program.
   """
+  sample_app_dir, sample_app_name = GetSampleApp(parsed_args.mode)
   cocoapods = {}
   if parsed_args.spec_repos:
     spec_repos = []
@@ -109,16 +123,17 @@ def GetPodSizeImpact(parsed_args):
     cocoapods[pod_name] = pod_version
   base_project = tempfile.mkdtemp()
   target_project = tempfile.mkdtemp()
-  CopyProject(SAMPLE_APP, base_project)
-  CopyProject(SAMPLE_APP, target_project)
+  CopyProject(sample_app_dir, base_project)
+  CopyProject(sample_app_dir, target_project)
+
   target_project = InstallPods(cocoapods,
-                               os.path.join(target_project, 'sizetestproject'),
-                               spec_repos, TARGET_NAME)
+                               os.path.join(target_project, sample_app_dir),
+                               spec_repos, sample_app_name, parsed_args.mode)
   source_project = os.path.join(base_project,
-                                'sizetestproject/SizeTest.xcodeproj')
+                                '{}/{}.xcodeproj'.format(sample_app_dir, sample_app_name))
 
   source_size, target_size = GenerateSizeDifference(
-      source_project, TARGET_NAME, target_project, TARGET_NAME)
+      source_project, sample_app_name, target_project, sample_app_name)
   print 'The pods combined add an extra size of {} bytes'.format(
       target_size - source_size)
 
@@ -134,6 +149,13 @@ def Main():
       nargs='+',
       required=True,
       help='The set of cocoapods')
+  parser.add_argument(
+      '--mode',
+      type=str,
+      choices=[MODE_SWIFT, MODE_OBJC],
+      default=MODE_OBJC,
+      help='Type of cocoapod'
+  )
   parser.add_argument(
       '--spec_repos',
       metavar='N',
