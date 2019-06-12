@@ -1,11 +1,11 @@
 {
-  "projectFile": "/googlemac/iPhone/Daylight/sizetracking/testconfigurations/sizetestproject/SizeTest.xcodeproj",
   "appScheme": "SizeTest",
   "iOSVersion": "8.0",
   "compilerFlags": {
     "ARCHS": "arm64",
     "CODE_SIGN_IDENTITY": "",
     "CODE_SIGNING_REQUIRED": "NO",
+    "CODE_SIGNING_ALLOWED": "NO",
     "ENABLE_BITCODE": "NO"
   },
   "withLinkMap": true,
