@@ -1,5 +1,4 @@
 {
-  "projectFile": "{path-to}/cocoapods-size/sizetestproject/SizeTest.xcodeproj",
   "appScheme": "SizeTest",
   "iOSVersion": "8.0",
   "compilerFlags": {
