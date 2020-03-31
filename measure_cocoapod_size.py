@@ -34,12 +34,12 @@ SWIFT_APP_NAME = 'SwiftApp'
 MODE_SWIFT = 'swift'
 MODE_OBJC = 'objc'
 
-DEFAULT_SPEC_REPOS = ['https://github.com/CocoaPods/Specs.git']
+DEFAULT_SPEC_REPOS = ['https://cdn.cocoapods.org/']
 
 SPEC_REPO_DICT = {
     'cpdc-internal': 'sso://cpdc-internal/spec',
     'cpdc-eap': 'sso://cpdc-eap/spec',
-    'master': 'https://github.com/CocoaPods/Specs.git'
+    'master': 'https://cdn.cocoapods.org/'
 }
 
 
