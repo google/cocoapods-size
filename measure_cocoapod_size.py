@@ -51,7 +51,7 @@ def GetSampleApp(mode):
     return OBJC_APP_DIR, OBJC_APP_NAME
 
 
-def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode):
+def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, platform):
   """InstallPods installs the pods.
 
   Args:
@@ -73,6 +73,8 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode):
     for repo in spec_repos:
       podfile.write('source "{}"\n'.format(repo))
     podfile.write('\n')
+    if platform:
+      podfile.write('platform :ios, \'{}\'\n'.format(platform))
     if mode == MODE_SWIFT:
       podfile.write('use_frameworks!\n')
     podfile.write('target \'{}\' do\n'.format(target_name))
@@ -129,7 +131,7 @@ def GetPodSizeImpact(parsed_args):
 
   target_project = InstallPods(cocoapods,
                                os.path.join(target_project, sample_app_dir),
-                               spec_repos, sample_app_name, parsed_args.mode)
+                               spec_repos, sample_app_name, parsed_args.mode, parsed_args.platform)
   source_project = os.path.join(base_project,
                                 '{}/{}.xcodeproj'.format(sample_app_dir, sample_app_name))
 
@@ -158,6 +160,10 @@ def Main():
       default=MODE_OBJC,
       help='Type of cocoapod'
   )
+  parser.add_argument(
+      '--platform',
+      type=str,
+      help='The podfile target platform')
   parser.add_argument(
       '--spec_repos',
       metavar='N',
