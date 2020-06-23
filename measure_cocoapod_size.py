@@ -55,7 +55,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode):
   """InstallPods installs the pods.
 
   Args:
-    cocoapods: Mapping from pod names to pod versions.
+    cocoapods: Mapping from pod names to pod versions/arguments.
     target_dir: The target directory.
     spec_repos: The set of spec repos.
     target_name: The name of the target.
@@ -78,7 +78,10 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode):
     podfile.write('target \'{}\' do\n'.format(target_name))
     for pod, version in cocoapods.items():
       if version:
-        podfile.write(' pod \'{}\', \'{}\'\n'.format(pod, version))
+        if '\'' in version:
+          podfile.write(' pod \'{}\', {}\n'.format(pod, version))
+        else:
+          podfile.write(' pod \'{}\', \'{}\'\n'.format(pod, version))
       else:
         podfile.write(' pod \'{}\'\n'.format(pod))
     podfile.write('end')
@@ -115,7 +118,7 @@ def GetPodSizeImpact(parsed_args):
   else:
     spec_repos = DEFAULT_SPEC_REPOS
   for pod in parsed_args.cocoapods:
-    pod_info = pod.split(':')
+    pod_info = pod.split(':', 1)
     pod_name = pod_info[0].strip()
     if len(pod_info) > 1:
       pod_version = pod_info[1].strip()
@@ -150,7 +153,7 @@ def Main():
       type=str,
       nargs='+',
       required=True,
-      help='The set of cocoapods')
+      help='The set of cocoapods, where N = PodName or PodName:version or PodName:\'arguements\'')
   parser.add_argument(
       '--mode',
       type=str,
