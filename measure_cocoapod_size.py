@@ -22,8 +22,10 @@ Usage: ./measure_cocoapod_size.py -cocoapods $POD_NAME:$POD_VERSION
 """
 
 import argparse
+import json
 import os
 import tempfile
+from collections import OrderedDict
 from xcode_project_diff import GenerateSizeDifference
 
 OBJC_APP_DIR = 'sizetestproject'
@@ -51,7 +53,7 @@ def GetSampleApp(mode):
     return OBJC_APP_DIR, OBJC_APP_NAME
 
 
-def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode):
+def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_sources):
   """InstallPods installs the pods.
 
   Args:
@@ -79,6 +81,12 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode):
     for pod, version in cocoapods.items():
       if version:
         podfile.write(' pod \'{}\', \'{}\'\n'.format(pod, version))
+      elif pod_sources is not None and pod in pod_sources.keys():
+        # pod_sources[pod] should have pairs like:
+        # "git":"sdk/repo.git", "branch":"main" or
+        # "path":"~/Documents/SDKrepo"
+        pod_source_config =  ", ".join(map(lambda x: ":{} => \'{}\'".format(x[0], x[1]), pod_sources[pod].iteritems()))
+        podfile.write(' pod \'{}\', {}\n'.format(pod, pod_source_config))
       else:
         podfile.write(' pod \'{}\'\n'.format(pod))
     podfile.write('end')
@@ -122,6 +130,10 @@ def GetPodSizeImpact(parsed_args):
     else:
       pod_version = ''
     cocoapods[pod_name] = pod_version
+  # Load JSON in order since in bleeding edge version of a Pod, `git` and
+  # `branch`/`tag`/`commit` are required and should be in order. e.g.
+  # pod 'Alamofire', :git => 'https://github.com/Alamofire/Alamofire.git', :branch => 'dev'
+  pod_sources = json.load(parsed_args.cocoapods_source_config, object_pairs_hook=OrderedDict) if parsed_args.cocoapods_source_config else None
   base_project = tempfile.mkdtemp()
   target_project = tempfile.mkdtemp()
   CopyProject(sample_app_dir, base_project)
@@ -129,7 +141,8 @@ def GetPodSizeImpact(parsed_args):
 
   target_project = InstallPods(cocoapods,
                                os.path.join(target_project, sample_app_dir),
-                               spec_repos, sample_app_name, parsed_args.mode)
+                               spec_repos, sample_app_name, parsed_args.mode,
+                               pod_sources)
   source_project = os.path.join(base_project,
                                 '{}/{}.xcodeproj'.format(sample_app_dir, sample_app_name))
 
@@ -143,7 +156,8 @@ def GetPodSizeImpact(parsed_args):
 def Main():
   """Main generates the PodSize impact.
   """
-  parser = argparse.ArgumentParser(description='The size impact of a cocoapod')
+  parser = argparse.ArgumentParser(description='The size impact of a cocoapod',
+          formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument(
       '--cocoapods',
       metavar='N',
@@ -165,6 +179,21 @@ def Main():
       nargs='+',
       required=False,
       help='The set of spec_repos')
+  parser.add_argument(
+      '--cocoapods_source_config',
+      metavar='CONFIG_JSON',
+      type=argparse.FileType('r'),
+      nargs='?',
+      required=False,
+      default=None,
+      help=''' A JSON file with customized pod source.E.g.
+      {
+        "FirebaseDatabase":
+        {
+        "path":"~/Documents/firebase-ios-sdk/"
+        }
+      }
+      ''')
 
   args = parser.parse_args()
 
