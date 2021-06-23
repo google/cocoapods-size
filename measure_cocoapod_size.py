@@ -62,6 +62,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
     spec_repos: The set of spec repos.
     target_name: The name of the target.
     mode: The type of cocoapods.
+    pod_sources: A dict of Pod mapping to its source.
 
   Returns:
     The path to the workspace.
@@ -85,7 +86,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
         # pod_sources[pod] should have pairs like:
         # "git":"sdk/repo.git", "branch":"main" or
         # "path":"~/Documents/SDKrepo"
-        pod_source_config =  ", ".join(map(lambda x: ":{} => \'{}\'".format(x[0], x[1]), pod_sources[pod].iteritems()))
+        pod_source_config =  ", ".join(map(lambda x: ":{} => \'{}\'".format(x[0], x[1]), pod_sources[pod].items()))
         podfile.write(' pod \'{}\', {}\n'.format(pod, pod_source_config))
       else:
         podfile.write(' pod \'{}\'\n'.format(pod))
@@ -104,6 +105,18 @@ def CopyProject(source_dir, target_dir):
   """
   os.system('cp -r {} {}'.format(source_dir, target_dir))
 
+def ValidateSourceConfig(pod_sources):
+  for sdk , source in pod_sources.items():
+    if len(source) >= 1 and ( source.keys()[0] not in set(["git", "path"]) ):
+      raise ValueError(
+              "Pod source of SDK {} should be `git` or `path`.".format(sdk))
+    elif len(source) > 1:
+      if source.keys()[0] != "git":
+        raise ValueError(
+                "For multiple specs for the SDK {} ,`git` should be added with `branch`, `tag` or `commit`".format(sdk))
+      if source.keys()[1] not in set(["branch", "tag", "commit"]):
+        raise ValueError(
+                "A specified version of the SDK {} should be from `branch`, `tag` or `commit`.".format(sdk))
 
 def GetPodSizeImpact(parsed_args):
   """GetPodSizeImpact gets the size impact of the set of pods.
@@ -133,23 +146,28 @@ def GetPodSizeImpact(parsed_args):
   # Load JSON in order since in bleeding edge version of a Pod, `git` and
   # `branch`/`tag`/`commit` are required and should be in order. e.g.
   # pod 'Alamofire', :git => 'https://github.com/Alamofire/Alamofire.git', :branch => 'dev'
-  pod_sources = json.load(parsed_args.cocoapods_source_config, object_pairs_hook=OrderedDict) if parsed_args.cocoapods_source_config else None
+  try:
+    pod_sources = json.load(parsed_args.cocoapods_source_config, object_pairs_hook=OrderedDict) if parsed_args.cocoapods_source_config else None
+    ValidateSourceConfig(pod_sources)
+  except ValueError as e:
+    raise ValueError("could not decode JSON value %s: %s" % (parsed_args.cocoapods_source_config.name, e))
+  ValidateSourceConfig(pod_sources)
   base_project = tempfile.mkdtemp()
   target_project = tempfile.mkdtemp()
   CopyProject(sample_app_dir, base_project)
   CopyProject(sample_app_dir, target_project)
 
-  target_project = InstallPods(cocoapods,
-                               os.path.join(target_project, sample_app_dir),
-                               spec_repos, sample_app_name, parsed_args.mode,
-                               pod_sources)
+  # target_project = InstallPods(cocoapods,
+  #                              os.path.join(target_project, sample_app_dir),
+  #                              spec_repos, sample_app_name, parsed_args.mode,
+  #                              pod_sources)
   source_project = os.path.join(base_project,
                                 '{}/{}.xcodeproj'.format(sample_app_dir, sample_app_name))
 
-  source_size, target_size = GenerateSizeDifference(
-      source_project, sample_app_name, target_project, sample_app_name)
-  print 'The pods combined add an extra size of {} bytes'.format(
-      target_size - source_size)
+  # source_size, target_size = GenerateSizeDifference(
+  #     source_project, sample_app_name, target_project, sample_app_name)
+  # print 'The pods combined add an extra size of {} bytes'.format(
+  #     target_size - source_size)
 
 
 
