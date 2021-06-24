@@ -52,6 +52,43 @@ Finding the size between two Xcode projects:
 
 `./xcode_project_diff.py --source_project=PROJECT1 --source_scheme=PROJECT1_SCHEME --target_project=PROJECT2 --target_scheme=PROJECT2_SCHEME`
 
+### Measure pod size from local or bleeding edge version
+
+Measuring the size of FirebaseDatabase CocoaPod from local:
+
+```
+./measure_cocoapod_size.py --cocoapods FirebaseDatabase --cocoapods_source_config "./source_config.json"
+```
+where the `source_config.json` is:
+```
+{
+  "FirebaseDatabase":
+    {
+      "path":"~/Documents/firebase-ios-sdk/",
+    }
+}
+
+```
+
+Measuring the size of FirebaseDatabase CocoaPod from a branch of a remote repo:
+
+```
+./measure_cocoapod_size.py --cocoapods FirebaseDatabase --cocoapods_source_config "./source_config.json"
+```
+where the `source_config.json` is:
+```
+{
+  "FirebaseDatabase":
+    {
+      "git":"https://github.com/firebase/firebase-ios-sdk",
+      "branch":"master"
+    }
+}
+
+```
+
+
+
 ## Available Tools
 
 ### measure_cocoapod_size.py

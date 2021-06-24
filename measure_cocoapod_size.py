@@ -91,6 +91,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
       else:
         podfile.write(' pod \'{}\'\n'.format(pod))
     podfile.write('end')
+  os.system('cat Podfile')
   os.system('pod install')
   os.chdir(cwd)
   return os.path.join(target_dir, '{}.xcworkspace'.format(target_name))
@@ -147,27 +148,31 @@ def GetPodSizeImpact(parsed_args):
   # `branch`/`tag`/`commit` are required and should be in order. e.g.
   # pod 'Alamofire', :git => 'https://github.com/Alamofire/Alamofire.git', :branch => 'dev'
   try:
-    pod_sources = json.load(parsed_args.cocoapods_source_config, object_pairs_hook=OrderedDict) if parsed_args.cocoapods_source_config else None
-    ValidateSourceConfig(pod_sources)
+    if pod_version:
+      print ("Since a version for the pod {} is specified, The config file {} \
+              will be validated but not used for binary measurement.".format(
+                  pod_name, parsed_args.cocoapods_source_config.name))
+    pod_sources = json.load(parsed_args.cocoapods_source_config, \
+            object_pairs_hook=OrderedDict) if parsed_args.cocoapods_source_config else None
+    if pod_sources: ValidateSourceConfig(pod_sources)
   except ValueError as e:
     raise ValueError("could not decode JSON value %s: %s" % (parsed_args.cocoapods_source_config.name, e))
-  ValidateSourceConfig(pod_sources)
   base_project = tempfile.mkdtemp()
   target_project = tempfile.mkdtemp()
   CopyProject(sample_app_dir, base_project)
   CopyProject(sample_app_dir, target_project)
 
-  # target_project = InstallPods(cocoapods,
-  #                              os.path.join(target_project, sample_app_dir),
-  #                              spec_repos, sample_app_name, parsed_args.mode,
-  #                              pod_sources)
+  target_project = InstallPods(cocoapods,
+                               os.path.join(target_project, sample_app_dir),
+                               spec_repos, sample_app_name, parsed_args.mode,
+                               pod_sources)
   source_project = os.path.join(base_project,
                                 '{}/{}.xcodeproj'.format(sample_app_dir, sample_app_name))
 
-  # source_size, target_size = GenerateSizeDifference(
-  #     source_project, sample_app_name, target_project, sample_app_name)
-  # print 'The pods combined add an extra size of {} bytes'.format(
-  #     target_size - source_size)
+  source_size, target_size = GenerateSizeDifference(
+      source_project, sample_app_name, target_project, sample_app_name)
+  print 'The pods combined add an extra size of {} bytes'.format(
+      target_size - source_size)
 
 
 
@@ -211,6 +216,7 @@ def Main():
         "path":"~/Documents/firebase-ios-sdk/"
         }
       }
+      If versions are specified in `cocoapods`, config here will be skipped.
       ''')
 
   args = parser.parse_args()
