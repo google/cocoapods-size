@@ -108,16 +108,22 @@ def CopyProject(source_dir, target_dir):
 
 def ValidateSourceConfig(pod_sources):
   for sdk , source in pod_sources.items():
-    if len(source) >= 1 and ( source.keys()[0] not in set(["git", "path"]) ):
+    if source and ( source.keys()[0] not in {"git", "path"} ):
       raise ValueError(
               "Pod source of SDK {} should be `git` or `path`.".format(sdk))
-    elif len(source) > 1:
+    elif len(source) == 2:
       if source.keys()[0] != "git":
         raise ValueError(
                 "For multiple specs for the SDK {} ,`git` should be added with `branch`, `tag` or `commit`".format(sdk))
-      if source.keys()[1] not in set(["branch", "tag", "commit"]):
+      if source.keys()[1] not in {"branch", "tag", "commit"}:
         raise ValueError(
                 "A specified version of the SDK {} should be from `branch`, `tag` or `commit`.".format(sdk))
+    elif len(source) > 2:
+      raise ValueError(
+        "Pod source of SDK {} can only specify `path`, `git`, or `git` and a reference (like a `branch`, `tag`, or `commit`)."
+        "See --help for an example config."
+        .format(sdk)
+      )
 
 def GetPodSizeImpact(parsed_args):
   """GetPodSizeImpact gets the size impact of the set of pods.
