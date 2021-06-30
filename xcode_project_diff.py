@@ -75,7 +75,7 @@ def CreateBasicCommandArgs(config_info, archive_path):
   swift_version = GetSwiftVersion()
   if swift_version:
     cmd_args.append('SWIFT_VERSION={}'.format(swift_version))
-  for flag, value in config_info['compilerFlags'].items():
+  for flag, value in list(config_info['compilerFlags'].items()):
     cmd_args.append('{}={}'.format(flag, value))
   return cmd_args
 
@@ -181,14 +181,14 @@ def Main():
       args.target_scheme)
   diff_size = source_size - target_size
   if source_size > target_size:
-    print('{} is {} larger than {}'.format(args.source_project, diff_size,
-                                           args.target_project))
+    print(('{} is {} larger than {}'.format(args.source_project, diff_size,
+                                           args.target_project)))
   elif source_size == target_size:
-    print('{} and {} are the same size'.format(args.source_project,
-                                               args.target_project))
+    print(('{} and {} are the same size'.format(args.source_project,
+                                               args.target_project)))
   else:
-    print('{} is {} smaller than {}'.format(args.source_project, -1 * diff_size,
-                                            args.target_project))
+    print(('{} is {} smaller than {}'.format(args.source_project, -1 * diff_size,
+                                            args.target_project)))
 
 
 if __name__ == '__main__':

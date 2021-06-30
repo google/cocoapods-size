@@ -79,14 +79,14 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
     if mode == MODE_SWIFT:
       podfile.write('use_frameworks!\n')
     podfile.write('target \'{}\' do\n'.format(target_name))
-    for pod, version in cocoapods.items():
+    for pod, version in list(cocoapods.items()):
       if version:
         podfile.write(' pod \'{}\', \'{}\'\n'.format(pod, version))
-      elif pod_sources is not None and pod in pod_sources.keys():
+      elif pod_sources is not None and pod in list(pod_sources.keys()):
         # pod_sources[pod] should have pairs like:
         # "git":"sdk/repo.git", "branch":"main" or
         # "path":"~/Documents/SDKrepo"
-        pod_source_config =  ", ".join(map(lambda x: ":{} => \'{}\'".format(x[0], x[1]), pod_sources[pod].items()))
+        pod_source_config =  ", ".join([":{} => \'{}\'".format(x[0], x[1]) for x in list(pod_sources[pod].items())])
         podfile.write(' pod \'{}\', {}\n'.format(pod, pod_source_config))
       else:
         podfile.write(' pod \'{}\'\n'.format(pod))
@@ -107,15 +107,15 @@ def CopyProject(source_dir, target_dir):
   os.system('cp -r {} {}'.format(source_dir, target_dir))
 
 def ValidateSourceConfig(pod_sources):
-  for sdk , source in pod_sources.items():
-    if source and ( source.keys()[0] not in {"git", "path"} ):
+  for sdk , source in list(pod_sources.items()):
+    if source and ( list(source.keys())[0] not in {"git", "path"} ):
       raise ValueError(
               "Pod source of SDK {} should be `git` or `path`.".format(sdk))
     elif len(source) == 2:
-      if source.keys()[0] != "git":
+      if list(source.keys())[0] != "git":
         raise ValueError(
                 "For multiple specs for the SDK {} ,`git` should be added with `branch`, `tag` or `commit`".format(sdk))
-      if source.keys()[1] not in {"branch", "tag", "commit"}:
+      if list(source.keys())[1] not in {"branch", "tag", "commit"}:
         raise ValueError(
                 "A specified version of the SDK {} should be from `branch`, `tag` or `commit`.".format(sdk))
     elif len(source) > 2:
@@ -155,9 +155,9 @@ def GetPodSizeImpact(parsed_args):
   # pod 'Alamofire', :git => 'https://github.com/Alamofire/Alamofire.git', :branch => 'dev'
   try:
     if pod_version:
-      print ("Since a version for the pod {} is specified, The config file {} \
+      print(("Since a version for the pod {} is specified, The config file {} \
               will be validated but not used for binary measurement.".format(
-                  pod_name, parsed_args.cocoapods_source_config.name))
+                  pod_name, parsed_args.cocoapods_source_config.name)))
     pod_sources = json.load(parsed_args.cocoapods_source_config, \
             object_pairs_hook=OrderedDict) if parsed_args.cocoapods_source_config else None
     if pod_sources: ValidateSourceConfig(pod_sources)
@@ -177,8 +177,8 @@ def GetPodSizeImpact(parsed_args):
 
   source_size, target_size = GenerateSizeDifference(
       source_project, sample_app_name, target_project, sample_app_name)
-  print 'The pods combined add an extra size of {} bytes'.format(
-      target_size - source_size)
+  print('The pods combined add an extra size of {} bytes'.format(
+      target_size - source_size))
 
 
 
