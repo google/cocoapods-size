@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/usr/bin/python
 """measure_cocoapod_size.py provides size impact of a given set of cocoapods.
 
 Usage: ./measure_cocoapod_size.py -cocoapods $POD_NAME:$POD_VERSION
