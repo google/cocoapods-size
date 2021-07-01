@@ -150,11 +150,11 @@ def GenerateSizeDifference(source_project, source_scheme, target_project,
   target_project_dir = os.path.dirname(target_project)
   cur_dir = os.getcwd()
   os.chdir(source_project_dir)
-  shell(source_cmd, timeout = build_timeout)
+  shell(source_cmd, timeout=build_timeout)
   source_final_binary_size = GetFinalBinarySize(ARCHIVE_PATH)
   os.chdir(cur_dir)
   os.chdir(target_project_dir)
-  shell(target_cmd, timeout = build_timeout)
+  shell(target_cmd, timeout=build_timeout)
   target_final_binary_size = GetFinalBinarySize(ARCHIVE_PATH)
   os.chdir(cur_dir)
   return source_final_binary_size, target_final_binary_size
