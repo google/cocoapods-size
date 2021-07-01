@@ -27,6 +27,7 @@ import os
 import tempfile
 from collections import OrderedDict
 from xcode_project_diff import GenerateSizeDifference
+from utils import shell
 
 OBJC_APP_DIR = 'sizetestproject'
 OBJC_APP_NAME = 'SizeTest'
@@ -69,8 +70,8 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
   """
   cwd = os.getcwd()
   os.chdir(target_dir)
-  os.system('pod init')
-  os.system('touch Podfile')
+  shell('pod init')
+  shell('touch Podfile')
 
   with open('Podfile', 'w') as podfile:
     for repo in spec_repos:
@@ -91,8 +92,8 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
       else:
         podfile.write(' pod \'{}\'\n'.format(pod))
     podfile.write('end')
-  os.system('cat Podfile')
-  os.system('pod install')
+  shell('cat Podfile')
+  shell('pod install')
   os.chdir(cwd)
   return os.path.join(target_dir, '{}.xcworkspace'.format(target_name))
 
@@ -104,7 +105,7 @@ def CopyProject(source_dir, target_dir):
     source_dir: The path to the source directory.
     target_dir: The path to the target directory.
   """
-  os.system('cp -r {} {}'.format(source_dir, target_dir))
+  shell('cp -r {} {}'.format(source_dir, target_dir))
 
 def ValidateSourceConfig(pod_sources):
   for sdk , source in pod_sources.items():
@@ -177,7 +178,7 @@ def GetPodSizeImpact(parsed_args):
                                 '{}/{}.xcodeproj'.format(sample_app_dir, sample_app_name))
 
   source_size, target_size = GenerateSizeDifference(
-      source_project, sample_app_name, target_project, sample_app_name)
+      source_project, sample_app_name, target_project, sample_app_name, parsed_args.build_timeout)
   print('The pods combined add an extra size of {} bytes'.format(
       target_size - source_size))
 
@@ -225,6 +226,13 @@ def Main():
       }
       If versions are specified in `cocoapods`, config here will be skipped.
       ''')
+  parser.add_argument(
+      '--build_timeout',
+      metavar='SECONDS',
+      nargs='?',
+      required=False,
+      default=None,
+      help='Timeout to build testapps.')
 
   args = parser.parse_args()
 
