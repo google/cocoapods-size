@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/usr/bin/python
 """xcode_project_diff.py provides size difference between two Xcode targets.
 
 This tool takes in an Xcode project file and targets of source and destination
@@ -26,6 +25,7 @@ import argparse
 import json
 import os
 import subprocess
+from utils import shell
 
 SIZE_CONFIG_PATH = 'size_build_configuration.json'
 ARCHIVE_PATH = 'out.xcarchive'
@@ -121,7 +121,7 @@ def GetFinalBinarySize(archive_path):
 
 
 def GenerateSizeDifference(source_project, source_scheme, target_project,
-                           target_scheme):
+                           target_scheme, build_timeout):
   """GenerateSizeDifference generates the final binary size.
 
   Args:
@@ -129,6 +129,7 @@ def GenerateSizeDifference(source_project, source_scheme, target_project,
     source_scheme:  The scheme of the source project.
     target_project: The path to the target project.
     target_scheme:  The scheme of the target project.
+    build_timeout:  Timeout to build testapps.
 
   Returns:
     a touple containing the final binary sizes.
@@ -149,11 +150,11 @@ def GenerateSizeDifference(source_project, source_scheme, target_project,
   target_project_dir = os.path.dirname(target_project)
   cur_dir = os.getcwd()
   os.chdir(source_project_dir)
-  os.system(source_cmd)
+  shell(source_cmd, timeout=build_timeout)
   source_final_binary_size = GetFinalBinarySize(ARCHIVE_PATH)
   os.chdir(cur_dir)
   os.chdir(target_project_dir)
-  os.system(target_cmd)
+  shell(target_cmd, timeout=build_timeout)
   target_final_binary_size = GetFinalBinarySize(ARCHIVE_PATH)
   os.chdir(cur_dir)
   return source_final_binary_size, target_final_binary_size
@@ -173,12 +174,14 @@ def Main():
       '--target_project', required=True, help='The path to the target project')
   parser.add_argument(
       '--target_scheme', required=True, help='The scheme of the target project')
+  parser.add_argument(
+      '--build_timeout', default=None, required=False, help='Timeout to build testapps')
 
   args = parser.parse_args()
 
   source_size, target_size = GenerateSizeDifference(
       args.source_project, args.source_scheme, args.target_project,
-      args.target_scheme)
+      args.target_scheme, build_timeout)
   diff_size = source_size - target_size
   if source_size > target_size:
     print('{} is {} larger than {}'.format(args.source_project, diff_size,
