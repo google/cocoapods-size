@@ -18,7 +18,7 @@ import subprocess
 
 def shell(command, timeout=None):
   try:
-    subprocess.run(command, shell = True, check = True, timeout=timeout)
+    subprocess.run(command, shell=True, check=True, timeout=timeout)
   except subprocess.CalledProcessError as e:
     print ('Command error: {} \n {}'.format(command, e))
   except subprocess.TimeoutExpired as e:
