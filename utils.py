@@ -16,9 +16,13 @@
 
 import subprocess
 
-def shell(command, timeout=None):
+def shell(command, capture_stdout=False, timeout=None):
   try:
-    subprocess.run(command, shell=True, check=True, timeout=timeout)
+    print("[Cocoapods-size] Shell: {}".format(command))
+    proc = subprocess.run(
+            command, shell=True, check=True, timeout=timeout,
+            stdout=subprocess.PIPE if capture_stdout else None)
+    return proc.stdout
   except subprocess.CalledProcessError as e:
     print ('Command error: {} \n {}'.format(command, e))
   except subprocess.TimeoutExpired as e:
