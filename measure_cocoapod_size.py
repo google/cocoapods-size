@@ -155,7 +155,7 @@ def GetPodSizeImpact(parsed_args):
   # `branch`/`tag`/`commit` are required and should be in order. e.g.
   # pod 'Alamofire', :git => 'https://github.com/Alamofire/Alamofire.git', :branch => 'dev'
   try:
-    if pod_version:
+    if pod_version and parsed_args.cocoapods_source_config:
       print("Since a version for the pod {} is specified, The config file {} \
               will be validated but not used for binary measurement.".format(
                   pod_name, parsed_args.cocoapods_source_config.name))
@@ -166,11 +166,12 @@ def GetPodSizeImpact(parsed_args):
     raise ValueError("could not decode JSON value %s: %s" % (parsed_args.cocoapods_source_config.name, e))
   base_project = tempfile.mkdtemp()
   target_project = tempfile.mkdtemp()
+  target_dir = os.path.join(target_project, sample_app_dir)
   CopyProject(sample_app_dir, base_project)
   CopyProject(sample_app_dir, target_project)
 
   target_project = InstallPods(cocoapods,
-                               os.path.join(target_project, sample_app_dir),
+                               target_dir,
                                spec_repos, sample_app_name, parsed_args.mode,
                                pod_sources)
   source_project = os.path.join(base_project,
@@ -178,6 +179,12 @@ def GetPodSizeImpact(parsed_args):
 
   source_size, target_size = GenerateSizeDifference(
       source_project, sample_app_name, target_project, sample_app_name, parsed_args.build_timeout)
+  if parsed_args.json:
+    podfile, _ = shell('pod ipc podfile-json {}/Podfile'.format(target_dir), capture_output=True)
+    podfile_dict = json.loads(podfile)
+    podfile_dict['combined_pods_extra_size'] = target_size - source_size
+    with open(parsed_args.json, 'w') as json_file:
+      json.dump(podfile_dict, json_file)
   print('The pods combined add an extra size of {} bytes'.format(
       target_size - source_size))
 
@@ -232,6 +239,13 @@ def Main():
       required=False,
       default=None,
       help='Timeout to build testapps.')
+  parser.add_argument(
+      '--json',
+      metavar='OUTPUT_FILE_NAME',
+      nargs='?',
+      required=False,
+      default=None,
+      help='Output JSON file.')
 
   args = parser.parse_args()
 
