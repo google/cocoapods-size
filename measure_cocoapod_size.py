@@ -181,7 +181,7 @@ def GetPodSizeImpact(parsed_args):
       source_project, sample_app_name, target_project, sample_app_name, parsed_args.build_timeout)
   if parsed_args.json:
     # Transfer Podfile to JSON format.
-    podfile, _ = shell('pod ipc podfile-json {}/Podfile'.format(target_dir), capture_output=True)
+    podfile = shell('pod ipc podfile-json {}/Podfile'.format(target_dir), capture_stdout=True)
     podfile_dict = json.loads(podfile)
     podfile_dict['combined_pods_extra_size'] = target_size - source_size
     with open(parsed_args.json, 'w') as json_file:
