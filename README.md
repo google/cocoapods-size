@@ -62,10 +62,12 @@ Measuring the size of FirebaseDatabase CocoaPod from local:
 where the `source_config.json` is:
 ```
 {
-  "FirebaseDatabase":
+  "pods":[
     {
-      "path":"~/Documents/firebase-ios-sdk/",
+      "sdk":"FirebaseDatabase",
+      "path":"~/Desktop/firebase-ios-sdk"
     }
+  ]
 }
 
 ```
@@ -78,11 +80,13 @@ Measuring the size of FirebaseDatabase CocoaPod from a branch of a remote repo:
 where the `source_config.json` is:
 ```
 {
-  "FirebaseDatabase":
+  "pods":[
     {
+      "sdk":"FirebaseDatabase",
       "git":"https://github.com/firebase/firebase-ios-sdk",
       "branch":"master"
     }
+  ]
 }
 
 ```
