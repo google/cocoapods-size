@@ -82,12 +82,19 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
     for pod, version in cocoapods.items():
       if version:
         podfile.write(' pod \'{}\', \'{}\'\n'.format(pod, version))
-      elif pod_sources is not None and pod in pod_sources.keys():
+      elif pod_sources is not None:
         # pod_sources[pod] should have pairs like:
+        # "sdk":"FirebaseDatabase" and
         # "git":"sdk/repo.git", "branch":"main" or
         # "path":"~/Documents/SDKrepo"
-        pod_source_config =  ", ".join([":{} => \'{}\'".format(x[0], x[1]) for x in pod_sources[pod].items()])
-        podfile.write(' pod \'{}\', {}\n'.format(pod, pod_source_config))
+        for pod_config in pod_sources['pods']:
+          if pod_config['sdk'] == pod:
+            pod_source_config = []
+            for config in pod_config.items():
+              if config[0] != 'sdk':
+                pod_source_config.append(":{} => \'{}\'".format(config[0], config[1]))
+            podfile.write(' pod \'{}\', {}\n'.format(pod, ",".join(pod_source_config)))
+            break
       else:
         podfile.write(' pod \'{}\'\n'.format(pod))
     podfile.write('end')
@@ -107,21 +114,26 @@ def CopyProject(source_dir, target_dir):
   shell('cp -r {} {}'.format(source_dir, target_dir))
 
 def ValidateSourceConfig(pod_sources):
-  for sdk , source in pod_sources.items():
-    source_keys = list(source.keys())
-    if source and ( source_keys[0] not in {"git", "path"} ):
+  if 'pods' not in pod_sources:
+    raise ValueError(
+            "The JSON config file should have 'pods' object containing pod configs.")
+
+  for pod_config in pod_sources['pods']:
+    source_keys = list(pod_config.keys())
+    sdk = pod_config['sdk']
+    if pod_config and ( source_keys[1] not in {"git", "path"} ):
       raise ValueError(
               "Pod source of SDK {} should be `git` or `path`.".format(sdk))
-    elif len(source) == 2:
-      if source_keys[0] != "git":
+    elif len(source_keys) == 3:
+      if source_keys[1] != "git":
         raise ValueError(
                 "For multiple specs for the SDK {} ,`git` should be added with `branch`, `tag` or `commit`".format(sdk))
-      if source_keys[1] not in {"branch", "tag", "commit"}:
+      if source_keys[2] not in {"branch", "tag", "commit"}:
         raise ValueError(
                 "A specified version of the SDK {} should be from `branch`, `tag` or `commit`.".format(sdk))
-    elif len(source) > 2:
+    elif len(source_keys) > 3:
       raise ValueError(
-        "Pod source of SDK {} can only specify `path`, `git`, or `git` and a reference (like a `branch`, `tag`, or `commit`)."
+        "Pod source of SDK {} can only specify `sdk` with `path`, `git`, or `git` and a reference (like a `branch`, `tag`, or `commit`)."
         "See --help for an example config."
         .format(sdk)
       )
@@ -161,6 +173,7 @@ def GetPodSizeImpact(parsed_args):
                   pod_name, parsed_args.cocoapods_source_config.name))
     pod_sources = json.load(parsed_args.cocoapods_source_config, \
             object_pairs_hook=OrderedDict) if parsed_args.cocoapods_source_config else None
+    print (pod_sources)
     if pod_sources: ValidateSourceConfig(pod_sources)
   except ValueError as e:
     raise ValueError("could not decode JSON value %s: %s" % (parsed_args.cocoapods_source_config.name, e))
@@ -225,13 +238,16 @@ def Main():
       required=False,
       default=None,
       help=''' A JSON file with customized pod source.E.g.
-      {
-        "FirebaseDatabase":
         {
-        "path":"~/Documents/firebase-ios-sdk/"
+          "pods":[
+                {
+                  "sdk":"FirebaseDatabase",
+                  "git":"https://github.com/firebase/firebase-ios-sdk",
+                  "branch":"master"
+                }
+            ]
         }
-      }
-      If versions are specified in `cocoapods`, config here will be skipped.
+      If versions are specified in the `cocoapods` arg, config here will be skipped.
       ''')
   parser.add_argument(
       '--build_timeout',
