@@ -173,7 +173,6 @@ def GetPodSizeImpact(parsed_args):
                   pod_name, parsed_args.cocoapods_source_config.name))
     pod_sources = json.load(parsed_args.cocoapods_source_config, \
             object_pairs_hook=OrderedDict) if parsed_args.cocoapods_source_config else None
-    print (pod_sources)
     if pod_sources: ValidateSourceConfig(pod_sources)
   except ValueError as e:
     raise ValueError("could not decode JSON value %s: %s" % (parsed_args.cocoapods_source_config.name, e))
