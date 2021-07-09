@@ -120,8 +120,14 @@ def ValidateSourceConfig(pod_sources):
 
   for pod_config in pod_sources['pods']:
     source_keys = list(pod_config.keys())
-    sdk = pod_config['sdk']
-    if pod_config and ( source_keys[1] not in {"git", "path"} ):
+    try:
+      sdk = pod_config['sdk']
+    except KeyError:
+      print("SDK should be specified.")
+      raise
+    if sdk.strip() == "":
+      raise ValueError( "SDK should not be empty or blank.")
+    elif pod_config and ( source_keys[1] not in {"git", "path"} ):
       raise ValueError(
               "Pod source of SDK {} should be `git` or `path`.".format(sdk))
     elif len(source_keys) == 3:
