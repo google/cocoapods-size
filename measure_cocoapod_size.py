@@ -41,7 +41,8 @@ DEFAULT_SPEC_REPOS = ['https://github.com/CocoaPods/Specs.git']
 SPEC_REPO_DICT = {
     'cpdc-internal': 'sso://cpdc-internal/spec',
     'cpdc-eap': 'sso://cpdc-eap/spec',
-    'master': 'https://github.com/CocoaPods/Specs.git'
+    'master': 'https://github.com/CocoaPods/Specs.git',
+    'specsstaging': 'https://github.com/firebase/SpecsStaging'
 }
 
 
