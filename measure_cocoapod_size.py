@@ -36,12 +36,15 @@ SWIFT_APP_NAME = 'SwiftApp'
 MODE_SWIFT = 'swift'
 MODE_OBJC = 'objc'
 
-DEFAULT_SPEC_REPOS = ['https://github.com/CocoaPods/Specs.git']
+DEFAULT_SPEC_REPOS = ['https://cdn.cocoapods.org/']
+
+MASTER_SOURCE = 'master'
 
 SPEC_REPO_DICT = {
     'cpdc-internal': 'sso://cpdc-internal/spec',
     'cpdc-eap': 'sso://cpdc-eap/spec',
-    'master': 'https://github.com/CocoaPods/Specs.git'
+    'specsstaging': 'https://github.com/firebase/SpecsStaging',
+    MASTER_SOURCE: 'https://cdn.cocoapods.org/'
 }
 
 
@@ -154,6 +157,13 @@ def GetPodSizeImpact(parsed_args):
   cocoapods = {}
   if parsed_args.spec_repos:
     spec_repos = []
+    # If cdn source is in spec_repos input, then it will be moved
+    # to the end and be added as the last source.
+    if MASTER_SOURCE in parsed_args.spec_repos:
+        parsed_args.spec_repos.append(
+            parsed_args.spec_repos.pop(
+                parsed_args.spec_repos.index(
+                    MASTER_SOURCE)))
     for repo in parsed_args.spec_repos:
       if repo in SPEC_REPO_DICT:
         spec_repos.append(SPEC_REPO_DICT[repo])
