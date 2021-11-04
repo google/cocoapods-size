@@ -65,7 +65,7 @@ def CreateBasicCommandArgs(config_info, archive_path, destination):
   Args:
     config_info: The config_info dictionary from the json file.
     archive_path: The path to store the archive.
-    destination: The destination the testapp will run on.
+    destination: The destination the test app will run on.
 
   Returns:
     The list of arguments for the xcodebuild command.
