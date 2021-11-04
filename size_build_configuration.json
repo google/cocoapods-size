@@ -1,6 +1,5 @@
 {
   "appScheme": "SizeTest",
-  "iOSVersion": "8.0",
   "compilerFlags": {
     "ARCHS": "arm64",
     "CODE_SIGN_IDENTITY": "",
