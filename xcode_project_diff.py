@@ -29,7 +29,6 @@ from utils import shell
 
 SIZE_CONFIG_PATH = 'size_build_configuration.json'
 ARCHIVE_PATH = 'out.xcarchive'
-DESTINATION = "'generic/platform=iOS Simulator'"
 TARGET = 'SizeTest'
 
 
@@ -59,21 +58,19 @@ def GetSwiftVersion():
     return None
 
 
-def CreateBasicCommandArgs(config_info, archive_path, destination):
+def CreateBasicCommandArgs(config_info, archive_path):
   """CreateBasicCommandArgs creates the basic command arguments.
 
   Args:
     config_info: The config_info dictionary from the json file.
     archive_path: The path to store the archive.
-    destination: The destination the test app will run on.
 
   Returns:
     The list of arguments for the xcodebuild command.
   """
   cmd_args = [
-      '-quiet', '-configuration Release', 'archive',
-      '-archivePath {}'.format(archive_path),
-      '-destination {}'.format(destination)
+      '-configuration Release', 'archive',
+      '-archivePath {}'.format(archive_path)
   ]
   swift_version = GetSwiftVersion()
   if swift_version:
@@ -138,7 +135,7 @@ def GenerateSizeDifference(source_project, source_scheme, target_project,
     a touple containing the final binary sizes.
   """
 
-  basic_args = CreateBasicCommandArgs(GetConfigDict(), ARCHIVE_PATH, DESTINATION)
+  basic_args = CreateBasicCommandArgs(GetConfigDict(), ARCHIVE_PATH)
   if source_project.endswith('/'):
     source_project = source_project[:-1]
   if target_project.endswith('/'):
