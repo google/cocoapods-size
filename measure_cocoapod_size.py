@@ -215,11 +215,11 @@ def GetPodSizeImpact(parsed_args):
     with open(parsed_args.json, 'w') as json_file:
       json.dump(podfile_dict, json_file)
   # Throw an error if the target size is 0, an example for command
-  # ./measure_cocoapod_size.py --cocoapods FirebaseABTesting FirebaseAut:8.0.0
+  # ./measure_cocoapod_size.py --cocoapods FirebaseABTesting AnErrorPod:8.0.0
   # This command will throw the following error:
   # ValueError: The size of the following pod combination is 0 and this could be caused by a failed build.
   # FirebaseABTesting
-  # FirebaseAut:8.0.0
+  # AnErrorPod:8.0.0
   if target_size == 0:
     target_pods = "\n".join(
             ["{}:{}".format(pod,version) if version != "" else pod 
