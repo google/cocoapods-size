@@ -214,6 +214,18 @@ def GetPodSizeImpact(parsed_args):
     podfile_dict['combined_pods_extra_size'] = target_size - source_size
     with open(parsed_args.json, 'w') as json_file:
       json.dump(podfile_dict, json_file)
+  # Throw an error if the target size is 0, an example for command
+  # ./measure_cocoapod_size.py --cocoapods FirebaseABTesting AnErrorPod:8.0.0
+  # This command will throw the following error:
+  # ValueError: The size of the following pod combination is 0 and this could be caused by a failed build.
+  # FirebaseABTesting
+  # AnErrorPod:8.0.0
+  if target_size == 0:
+    target_pods = "\n".join(
+            ["{}:{}".format(pod,version) if version != "" else pod 
+                for pod, version in  cocoapods.items()])
+    raise ValueError(
+            "The size of the following pod combination is 0 and this could be caused by a failed build.\n{}".format(target_pods))
   print('The pods combined add an extra size of {} bytes'.format(
       target_size - source_size))
 
