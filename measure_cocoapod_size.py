@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Copyright 2018 Google LLC
 #
@@ -32,6 +32,8 @@ OBJC_APP_DIR = 'sizetestproject'
 OBJC_APP_NAME = 'SizeTest'
 SWIFT_APP_DIR = 'SwiftApp'
 SWIFT_APP_NAME = 'SwiftApp'
+SIZE_CONFIG_PATH = 'size_build_configuration.json'
+IOS_VERSION_KEY = 'iOSVersion'
 
 MODE_SWIFT = 'swift'
 MODE_OBJC = 'objc'
@@ -56,7 +58,7 @@ def GetSampleApp(mode):
     return OBJC_APP_DIR, OBJC_APP_NAME
 
 
-def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_sources):
+def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_sources, ios_version):
   """InstallPods installs the pods.
 
   Args:
@@ -66,6 +68,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
     target_name: The name of the target.
     mode: The type of cocoapods.
     pod_sources: A dict of Pod mapping to its source.
+    ios_version: iOS version of the project.
 
   Returns:
     The path to the workspace.
@@ -76,6 +79,8 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
   shell('touch Podfile')
 
   with open('Podfile', 'w') as podfile:
+    if ios_version is not None:
+      podfile.write('platform :ios, \'{}\'\n'.format(ios_version))
     for repo in spec_repos:
       podfile.write('source "{}"\n'.format(repo))
     podfile.write('\n')
@@ -192,6 +197,16 @@ def GetPodSizeImpact(parsed_args):
     if pod_sources: ValidateSourceConfig(pod_sources)
   except ValueError as e:
     raise ValueError("could not decode JSON value %s: %s" % (parsed_args.cocoapods_source_config.name, e))
+  # Set iOS version for the project, the lowest iOS version of all targets
+  # will be added if the version is not specified. Since there is only one
+  # target in either the Objectve-C or the Swift testapp project, the version
+  # will be the one of the target.
+  ios_version = parsed_args.ios_version
+  if ios_version is None:
+    with open(SIZE_CONFIG_PATH, 'r') as size_config:
+      config_info = json.loads(size_config.read())
+      ios_version = config_info[IOS_VERSION_KEY] if IOS_VERSION_KEY in config_info else None
+
   base_project = tempfile.mkdtemp()
   target_project = tempfile.mkdtemp()
   target_dir = os.path.join(target_project, sample_app_dir)
@@ -201,7 +216,7 @@ def GetPodSizeImpact(parsed_args):
   target_project = InstallPods(cocoapods,
                                target_dir,
                                spec_repos, sample_app_name, parsed_args.mode,
-                               pod_sources)
+                               pod_sources, ios_version)
   source_project = os.path.join(base_project,
                                 '{}/{}.xcodeproj'.format(sample_app_dir, sample_app_name))
 
@@ -290,6 +305,13 @@ def Main():
       required=False,
       default=None,
       help='Output JSON file.')
+  parser.add_argument(
+      '--ios_version',
+      metavar='IOS_VERSION',
+      nargs='?',
+      required=False,
+      default=None,
+      help='Specify minimum ios version in the Podfile before a project is built.')
 
   args = parser.parse_args()
 
