@@ -197,8 +197,10 @@ def GetPodSizeImpact(parsed_args):
     if pod_sources: ValidateSourceConfig(pod_sources)
   except ValueError as e:
     raise ValueError("could not decode JSON value %s: %s" % (parsed_args.cocoapods_source_config.name, e))
-  # Set iOS version for the project, a default version of iOS will be added if
-  # the version is not specified.
+  # Set iOS version for the project, the lowest iOS version of all targets
+  # will be added if the version is not specified. Since there is only one
+  # target in either the Objectve-C or the Swift testapp project, the version
+  # will be the one of the target.
   ios_version = parsed_args.ios_version
   if ios_version is None:
     with open(SIZE_CONFIG_PATH, 'r') as size_config:
