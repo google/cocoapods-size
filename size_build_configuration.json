@@ -6,7 +6,8 @@
     "CODE_SIGN_IDENTITY": "",
     "CODE_SIGNING_REQUIRED": "NO",
     "CODE_SIGNING_ALLOWED": "NO",
-    "ENABLE_BITCODE": "NO"
+    "ENABLE_BITCODE": "NO",
+    "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES": "NO"
   },
   "withLinkMap": true,
   "officialData": false
