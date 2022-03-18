@@ -84,8 +84,7 @@ def InstallPods(cocoapods, target_dir, spec_repos, target_name, mode, pod_source
     for repo in spec_repos:
       podfile.write('source "{}"\n'.format(repo))
     podfile.write('\n')
-    if mode == MODE_SWIFT:
-      podfile.write('use_frameworks!\n')
+    podfile.write('use_frameworks! :linkage => :static\n')
     podfile.write('target \'{}\' do\n'.format(target_name))
     for pod, version in cocoapods.items():
       if version:
